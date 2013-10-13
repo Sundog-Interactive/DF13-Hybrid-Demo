@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0; user-scalable=no" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+
+<!-- include jquery mobile -->
+<link rel="stylesheet" href="themes/sundog-light-jqm.min.css" />
+
+<link rel="stylesheet" href="jquery/jquery.mobile.structure-1.3.2.min.css" />
+<script src="jquery/jquery-1.9.1.min.js"></script>
+<script src="jquery/jquery.mobile-1.3.2.min.js"></script>
+
+
+<!-- Include cordova. -->
+<script src="cordova-2.3.0.js"></script>
+
+<!-- Include cordova plugins -->
+<script src="cordova.force.js"></script>
+
+<!-- include forcetk.mobilesdk for REST transaction support -->
+<script src="forcetk.mobilesdk.js"></script>
+
+<style>
+img {
+	width: 100%;
+}
+</style>
+
+<script>
+	// The version of the REST API you wish to use in your app.
+	var apiVersion = "v28.0";
+	var forcetkClient;
+	var currentUserId;
+	var debugMode = true;
+	var logToConsole = cordova.require("salesforce/util/logger").logToConsole;
+
+	jQuery(document).ready(function() {
+		//Add event listeners and so forth here
+		logToConsole("onLoad: jquery ready");
+		document.addEventListener("deviceready", onDeviceReady, false);
+
+	});
+
+	// When this function is called, Cordova has been initialized and is ready to roll 
+	function onDeviceReady() {
+		logToConsole("onDeviceReady: Cordova ready");
+		//Call getAuthCredentials to get the initial session credentials
+		cordova.require("salesforce/plugin/oauth").getAuthCredentials(
+				salesforceSessionRefreshed, getAuthCredentialsError);
+
+		//register to receive notifications when autoRefreshOnForeground refreshes the sfdc session
+		document.addEventListener("salesforceSessionRefresh",
+				salesforceSessionRefreshed, false);
+
+		//enable buttons
+		regLinkClickHandlers();
+	}
+
+	function salesforceSessionRefreshed(creds) {
+		logToConsole("salesforceSessionRefreshed");
+
+		// Depending on how we come into this method, `creds` may be callback data from the auth
+		// plugin, or an event fired from the plugin.  The data is different between the two.
+		var credsData = creds;
+		if (creds.data) // Event sets the `data` object with the auth data.
+			credsData = creds.data;
+
+		//Set the userId from credentials to a local variable
+		currentUserId = credsData.userId;
+
+		forcetkClient = new forcetk.Client(credsData.clientId,
+				credsData.loginUrl);
+		forcetkClient.setSessionToken(credsData.accessToken, apiVersion,
+				credsData.instanceUrl);
+		forcetkClient.setRefreshToken(credsData.refreshToken);
+		forcetkClient.setUserAgentString(credsData.userAgent);
+
+	}
+
+	function getAuthCredentialsError(error) {
+		logToConsole("getAuthCredentialsError: " + error);
+	}
+</script>
+
+<!-- load our app-specific code -->
+<script src="inline.js"></script>
+
+</head>
+<body>
+	<div data-role="page" data-theme="a" id="jqm-home">
+		<div data-role="header" data-theme="a">
+			<h1>Claim Reporter</h1>
+		</div>
+
+		<div id="#content" data-role="content">
+			<div id="div_sfdc_contact_list">
+				<select id="select_contacts">
+				  <option value="">Select a Contact</option>
+				</select>		
+			</div>
+			
+			<table width="100%">
+				<tr>
+					<td width="50%"><a href="#" id="link_img1"><img src="images/camera.png" id="image1"/></a></td>
+					<td width="50%"><a href="#" id="link_img2"><img src="images/camera.png" id="image2"/></a></td>
+				</tr>
+				<tr>
+					<td width="50%"><a href="#" id="link_img3"><img src="images/camera.png" id="image3"/></a></td>
+					<td width="50%"><a href="#" id="link_img4"><img src="images/camera.png" id="image4"/></a></td>	
+				</tr>
+			</table>
+
+			<p>
+				<a href="#" id="link_upload_checkin" data-role="button">Upload and Check-in</a>
+			</p>
+			<p>
+				<a href="#" id="link_reset" data-role="button">Reset</a>
+			</p>
+		</div>
+
+	</div>
+	<div data-role="dialog" id="jqm-dialog">
+		<div data-role="header" data-theme="a">
+			<h1>Error</h1>
+		</div>
+		<div data-role="content" data-theme="a" style="text-align: center;">
+			<p id="dialog-text"></p>
+			<a href="docs-dialogs.html" data-role="button" data-rel="back"
+				data-theme="a">OK</a>
+		</div>
+	</div>
+</body>
+</html>
