@@ -76,7 +76,9 @@ img {
 				credsData.instanceUrl);
 		forcetkClient.setRefreshToken(credsData.refreshToken);
 		forcetkClient.setUserAgentString(credsData.userAgent);
-
+		
+		//query contacts for select options
+		queryContacts();
 	}
 
 	function getAuthCredentialsError(error) {
