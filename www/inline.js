@@ -45,7 +45,6 @@ function regLinkClickHandlers() {
         getPhoto('image4');
     });
 
-	queryContacts();
 }
 
 function resetStuff(){
